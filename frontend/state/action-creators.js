@@ -1,32 +1,74 @@
+import axios from 'axios'
+//Actions
+import * as types from './action-types'
+const getURL = 'http://localhost:9000/api/quiz/next'
+const postAnswerURL = 'http://localhost:9000/api/quiz/answer'
+const formPostURL = 'http://localhost:9000/api/quiz/new'
+
 // ❗ You don't need to add extra action creators to achieve MVP
-export function moveClockwise() { }
+export function moveClockwise(amount) { 
+  return { 
+    type: types.MOVE_CLOCKWISE, 
+    payload: amount 
+  }
+}
 
-export function moveCounterClockwise() { }
+export function moveCounterClockwise(amount) { 
+  return { 
+    type: types.MOVE_COUNTERCLOCKWISE,
+    payload: amount
+  }
+}
 
-export function selectAnswer() { }
+export function selectAnswer(id) {
+  return {type: types.SET_SELECTED_ANSWER, payload: id}
+}
 
-export function setMessage() { }
+export function setMessage(message) { 
+  return {type: types.SET_INFO_MESSAGE, payload: message}
+}
 
-export function setQuiz() { }
-
-export function inputChange() { }
+export function setQuiz(quiz) { 
+  return {type: types.SET_QUIZ_INTO_STATE, payload: quiz}
+}
+export function inputChange(formID, value) { debugger
+  return {type: types.INPUT_CHANGE, payload: formID, value}
+}
 
 export function resetForm() { }
 
+
 // ❗ Async action creators
-export function fetchQuiz() {
-  return function (dispatch) {
-    // First, dispatch an action to reset the quiz state (so the "Loading next quiz..." message can display)
-    // On successful GET:
-    // - Dispatch an action to send the obtained quiz to its state
+export function fetchQuiz() { 
+  return function (dispatch){ 
+    // dispatch({type: types.LOADING,})
+     axios
+    .get(getURL)
+    .then(res => {
+      console.log('RESSSSS', res)
+      dispatch(setQuiz(res.data));
+    })
+    .catch(err => console.log({err}))
+    // .finally(
+      // dispatch({type: types.LOADING,})
+    // )
   }
 }
-export function postAnswer() {
-  return function (dispatch) {
+export function postAnswer({quiz_id, answer_id}) { 
+  return function (dispatch) { 
     // On successful POST:
     // - Dispatch an action to reset the selected answer state
     // - Dispatch an action to set the server message to state
-    // - Dispatch the fetching of the next quiz
+    // - Dispatch the fetching of the next quiz 
+    // { "quiz_id": "LVqUh", "answer_id": "0VEv0" }
+    axios
+    .post(postAnswerURL, {quiz_id, answer_id})
+    // console.log({quiz_id, answer_id})
+    .then(res => {
+      dispatch(fetchQuiz())
+      dispatch(setMessage(res.data.message))
+    })
+    .catch(err => console.log({err}))
   }
 }
 export function postQuiz() {
